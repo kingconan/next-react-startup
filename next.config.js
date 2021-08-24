@@ -1,3 +1,11 @@
 module.exports = {
-  reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/quality_platform/home',
+        permanent: true,
+      }
+    ]
+  }
 }

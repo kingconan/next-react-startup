@@ -23,6 +23,43 @@ app.prepare().then(() => {
         ctx.body = 'ping test'
     });
 
+    router.get('/fake_api/latest_runs', async (ctx, next) => {
+        ctx.status = 200
+        ctx.body = {
+            code: 0,
+            message: 'ok',
+            obj: [
+                {
+                    simulation: 'simulation_001',
+                    rt_99: '1.2s',
+                    rt_95: '1.0s',
+                    tps: 1000,
+                    env: 'stage',
+                    created_at: '2021-08-08 23:00:00',
+                    key:'1'
+                },
+                {
+                    simulation: 'simulation_002',
+                    rt_99: '1.2s',
+                    rt_95: '1.0s',
+                    tps: 1000,
+                    env: 'stage',
+                    created_at: '2021-08-08 23:00:00',
+                    key:'2'
+                },
+                {
+                    simulation: 'simulation_003',
+                    rt_99: '1.2s',
+                    rt_95: '1.0s',
+                    tps: 1000,
+                    env: 'stage',
+                    created_at: '2021-08-08 23:00:00',
+                    key:'3'
+                }
+            ]
+        }
+    });
+
     router.all('(.*)', async (ctx) => {
         await handle(ctx.req, ctx.res)
         ctx.respond = false
