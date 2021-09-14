@@ -19,6 +19,10 @@ export default function BasicLayout({ current_path, children }) {
         {
             name: 'Feature Flag',
             router: '/quality_platform/feature_flag',
+        },
+        {
+            name: 'Webapp performance',
+            router: '/quality_platform/webapp_performance',
         }
     ]
     return (

@@ -6,7 +6,20 @@ const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
 const bodyParser = require('koa-bodyparser');
+const fetch = require('node-fetch')
+const cheerio = require('cheerio');
 
+function getLinks(ret){
+    const $ = cheerio.load(ret);
+    const links = []
+    $('a').each( function () {
+        let link = $(this).attr('href');
+        if(link.length > 5){
+            links.push(link);
+        }
+    });
+    return links
+}
 
 app.prepare().then(() => {
     const server = new Koa()
@@ -23,6 +36,43 @@ app.prepare().then(() => {
         ctx.body = 'ping test'
     });
 
+    router.get('/lg/api/get', async (ctx, next) => {
+        ctx.status = 200
+        const baseUrl = 'http://34.92.57.93:10038/lighthouse_report/';
+        const ret = await fetch(baseUrl);
+        const body = await ret.text();
+        let links = getLinks(body)
+        let retLg = {}
+        for (const link of links) {
+            const url = `${baseUrl}${link}reports/`;
+            const ret = await fetch(url);
+            const retText = await ret.text();
+            const report_links = getLinks(retText);
+            for(const report_link of report_links){
+                if(report_link.endsWith(".json")){
+                    const jsonUrl = `${baseUrl}${link}reports/${report_link}`;
+                    const ret = await fetch(jsonUrl);
+                    const retText = await ret.text();
+                    const jsonRet = JSON.parse(retText);
+                    for(let i=0;i<jsonRet.length;i++){
+                        const name = jsonRet[i]['name']
+                        const date = jsonRet[i]['date']
+                        if(!(name in retLg)){
+                            retLg[name] = []
+                        }
+                        retLg[name].push({
+                            'date': date,
+                            'performance':Math.round(jsonRet[i]['result']['performance'] * 100),
+                            'accessibility':Math.round(jsonRet[i]['result']['accessibility'] * 100),
+                            'best-practices':Math.round(jsonRet[i]['result']['best-practices'] * 100)
+
+                        })
+                    }
+                }
+            }
+        }
+        ctx.body = retLg
+    });
     router.get('/fake_api/latest_runs', async (ctx, next) => {
         ctx.status = 200
         ctx.body = {
